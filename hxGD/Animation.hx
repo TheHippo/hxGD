@@ -31,12 +31,18 @@ class Animation {
 	private var loop:Bool;
 	private var optimise:Bool;
 	private var globalCM:Bool;
-	//private var images:Array<Dynamic>;
 	
 	private var data:Void;
 
+	/**
+	 * creates a new Animation
+	 * @param	filename	where to save the gif animation
+	 * @param	delay		delay between each frame in milliseconds
+	 * @param	loop
+	 * @param	optimise	optimise output works only with a global color map
+	 * @param	globalCM	using a global colormap, smaller files, slower creationtime
+	 */
 	public function new(filename:String,delay:Int,?loop:Bool=true,?optimise:Bool=true,globalCM:Bool=true) {
-		//this.images = new Array<Image>();
 		data = gd_initAnim();
 		this.filename = filename;
 		this.delay = delay;
@@ -45,21 +51,19 @@ class Animation {
 		this.globalCM = globalCM;
 	}
 	
+	/**
+	 * adds an image to the animation. a copy of the image is made so can alter it of throw it
+	 * @param	image
+	 */
 	public function addImage(image:Image):Void {
-		//this.images.push(image.img);
 		gd_addImage(data,image.img);
 	}
 	
+	/**
+	 * finally render the animation to the file
+	 */
 	public function render():Void {
-		//trace(images.length);
-		//try {
-			var gi:Dynamic = untyped Lib.haxeToNeko(images);
-			var gf:Dynamic = untyped Lib.haxeToNeko(filename);	
-			gd_renderGifAnimation(gi,loop,gf,globalCM,delay,optimise);	
-		//}
-		//catch (e:Dynamic) {
-//			trace(e);
-	//	}
+		gd_renderGifAnimation(data,loop,Lib.haxeToNeko(filename),globalCM,delay,optimise);	
 	}
 	
 	private static var gd_renderGifAnimation = Lib.load("nGD","RenderGifAnimation",-1);

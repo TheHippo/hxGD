@@ -19,7 +19,6 @@
  *      MA 02110-1301, USA.
  */
 
-#include <stdio.h>
 #include <gd.h>
 #include <neko.h>
 #include "nGDImage.h"
@@ -41,25 +40,8 @@ struct _AnimationData {
 
 typedef struct _AnimationData *AnimationData;
 
-#define animationLength(anim) (anim->length)	
-
-/*
- * void gdImageGifAnimBegin(gdImagePtr im, FILE *out, int GlobalCM, int Loops)
- * settings global:
- * 		- global colorpalette
- * 		- looping
- * 		- filename pointer
- * 		- optimize previm
- * 
- * void gdImageGifAnimAdd(gdImagePtr im, FILE *out, int LocalCM, int LeftOfs, int TopOfs, int Delay, int Disposal, gdImagePtr previm)
- * frame
- * 		- delay in 1/100 s
- * 		- int Disposal = gdDisposalNone
- * 
- * void gdImageGifAnimEnd(FILE *out)
- */
-
-#define trace(m)	printf("%s\n",m);
+#define listImage(list)	(list->img)
+#define animationLength(anim) (anim->length)
 
 AnimationData GetAnimation(value anim) {
 	val_check_kind(anim,AnimationPtr);
@@ -67,13 +49,12 @@ AnimationData GetAnimation(value anim) {
 }
 
 value FreeAnim(value anim) {
-	trace("clear anim");
 	AnimationData _anim = GetAnimation(anim);
 	ImageList cur = _anim->list;
 	while (cur!=NULL) {
 		ImageList del = cur;
 		cur = del->next;
-		gdImageDestroy(del->img);
+		gdImageDestroy(listImage(del));
 	}
 	return val_null;
 }
@@ -83,102 +64,129 @@ void finalizeAnim(value v) {
 }
 
 value InitAnimation() {
-	trace("init anim");
-	AnimationData anim = (AnimationData)alloc_private(sizeof(AnimationData));
+	AnimationData anim = (AnimationData)alloc(sizeof(AnimationData));
 	anim->length = 0;
 	anim->list = NULL;
 	value ret = alloc_abstract(AnimationPtr,anim);
 	val_gc(ret,finalizeAnim);
-	printf("%p - %i\n",anim->list,anim->length);
-	printf("returning pointer: %p\n",anim);
 	return ret;
 }
 
 ImageList newImageListElement(gdImagePtr img) {
-	ImageList ret = (ImageList)alloc_private(sizeof(ImageList));
+	ImageList ret = (ImageList)alloc(sizeof(ImageList));
 	ret->img = img;
 	ret->next = NULL;
 	return ret;	
 }
 
 value AddImage(value animdata,value image) {
-	trace("add image");
 	ImageData img = getImage(image);
 	AnimationData anim = GetAnimation(animdata);
-	printf("%p - %i\n",anim->list,anim->length);
-	printf("recieving pointer: %p\n",anim);
 	gdImagePtr oldimg = imageImage(img);
 	gdImagePtr newimg;
 	if (gdImageTrueColor(oldimg))
 		newimg = gdImageCreateTrueColor(gdImageSX(oldimg),gdImageSY(oldimg));
 	else
-		newimg = gdImageCreate(gdImageSX(oldimg),gdImageSY(oldimg));
-	gdImageCopy(newimg,oldimg,0,0,0,0,gdImageSX(oldimg),gdImageSY(oldimg));
-//	trace("made copy");
+		newimg = gdImageCreate(gdImageSX(oldimg),gdImageSY(oldimg));  
+	gdImageCopy(newimg,oldimg,0,0,0,0,gdImageSX(oldimg),gdImageSY(oldimg)); 
 	
-	ImageList add = newImageListElement(newimg);
-	//trace("add to list");
-	printf("length of list: %i\n",anim->length);
+	ImageList addImg = newImageListElement(newimg);
 	if (anim->list==NULL) {
-		trace("list was empty");
-		anim->list = add;
+		anim->list = addImg;
 	}
 	else {
-		trace("there was already a element in here");
 		ImageList cur = anim->list;
-		printf("cur: %p\n",anim->list);
-		while (cur!=NULL)
+		while (cur->next!=NULL)
 			cur = cur->next;
-		cur->next = add;	
-	}
-	trace("added to list");
+		cur->next = addImg;	
+	} 
 		
-	//anim->length++;
+	anim->length++;
 	
 	return val_null;
 }
 
 //value RenderGifAnimation(value images,value loop,value filename,value globalCM,value delay,value optimise) {
 value RenderGifAnimation(value *args,int nargs) {
-	trace("start");
 	enum {eImages,eLoop,eFilename,eGlobalCM,eDelay,eOptimise,eSize};
 	if (nargs!=eSize)
 		neko_error();
 	
-	trace("getting images");
-	
-	//getting images
-	int nframes = val_array_size(args[eImages]);
-	value *rawImg = val_array_ptr(args[eImages]);
-	ImageData img[nframes];
-	int i;
-	for (i=0;i<nframes;i++)
-		img[i]=getImage(rawImg[i]);
-	
-	trace("getting config");
+	AnimationData anim = GetAnimation(args[eImages]);	
+	if (animationLength(anim)<1)
+		val_throw(alloc_string("no images in animation"));
 	
 	//getting config
-	int _loop = val_bool(args[eLoop]);
+	int _loop = (val_bool(args[eLoop]))-1;
 	char *_filename = val_string(args[eFilename]);
 	int _globalCM = val_bool(args[eGlobalCM]);
 	int _localCM = (_globalCM?0:1);
 	int _optimise = val_bool(args[eOptimise]);
-	int _delay = val_int(args[eDelay])*10;
+	int _delay = val_int(args[eDelay])/10;
 	FILE *file = fopen(_filename,"wb");
 	
-	trace("anim begin");
-	printf("length: %i\n",nframes);
-	printf("%p\n",imageImage(img[0]));
-	gdImageGifAnimBegin(imageImage(img[0]),file,_globalCM,_loop-1);
-	trace("start images");
-	for (i=0;i<nframes;i++)
-		gdImageGifAnimAdd(imageImage(img[0]),file,_localCM ,0,0,_delay,gdDisposalNone,((_optimise && i!=0)?imageImage(img[i-1]):NULL));	
-	trace("alle images");
+	
+	// doing the palette handling....
+	if (_localCM) { // just make sure every thing is palette based image
+		ImageList cur = anim->list;
+		while (cur->next!=NULL) {
+			if (gdImageTrueColor(cur->img)) { //somehow it works for me only this way (making a temporary copy)
+				gdImagePtr temp = gdImageCreatePaletteFromTrueColor(cur->img,1,256);
+				gdImageCopy(cur->img,temp,0,0,0,0,gdImageSX(temp),gdImageSY(temp));
+				gdImageDestroy(temp);
+			}			
+			cur = cur->next;
+		}
+	}
+	else { //make sure all images have the same palette
+		// for better quality we make the palette out of all images
+		gdImagePtr temp;
+		int i;
+		ImageList cur;
+		int w = gdImageSX(anim->list->img);
+		int h = gdImageSY(anim->list->img);			
+		
+		temp = gdImageCreateTrueColor(w,(animationLength(anim)-1)*h);
+		cur = anim->list;
+		i = 0;
+		while (cur->next != NULL) {
+			gdImageCopy(temp,cur->img,0,i*h,0,0,w,h);
+			i++;
+			cur = cur->next;
+		}		
+		temp = gdImageCreatePaletteFromTrueColor(temp,1,256);
+		
+		cur = anim->list;
+		i=0;
+		int trans;
+		while (cur->next != NULL) {
+			cur->img = gdImageCreate(w,h);
+			gdImageCopy(cur->img,temp,0,0,0,i*h,w,h);
+			if (cur!=anim->list) {
+				gdImagePaletteCopy(cur->img,anim->list->img);
+				gdImageColorTransparent(cur->img,trans);
+			}
+			else
+				trans = gdImageColorAllocate(cur->img,1,1,1);
+			i++;
+			cur = cur->next;
+		}
+		
+		gdImageDestroy(temp);
+	}
+	
+	gdImageGifAnimBegin(anim->list->img,file,_globalCM,_loop);
+	
+	ImageList cur = anim->list;
+	gdImagePtr last;
+	while (cur->next!=NULL) {
+		gdImageGifAnimAdd(cur->img,file,_localCM ,0,0,_delay,gdDisposalNone,((_optimise && _globalCM)?last:NULL));	
+		last = cur->img;
+		cur = cur->next;
+	}
 	gdImageGifAnimEnd(file);
-	trace("done");
 	
 	fclose(file);
 	
-	trace("close");
 	return val_null;	
 }
