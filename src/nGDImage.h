@@ -19,11 +19,11 @@
  *      MA 02110-1301, USA.
  */
 
-#define abs(i)	(i>0?i:-i)
+//#define abs(i)	(i>0?i:-i)
 
 #define imageAntiAliased 1
-#define imageBrushed 2
-#define imageTiled 4
+#define imageBrushed 2 //unused
+#define imageTiled 4 //unused
 #define imageStyled 8
 
 struct _ImageData {
@@ -41,29 +41,17 @@ typedef struct _ImageData *ImageData;
 #define imageIsStyled(i)			((((i->config) & imageStyled) == imageStyled)?1:0)
 #define imageSetAntiAliased(i,a)	(i->config = ((a==1) ? (i->config | imageAntiAliased) : (i->config & ~imageAntiAliased)))
 #define imageSetStyled(i,a)			(i->config = ((a==1) ? (i->config | imageStyled) : (i->config & ~imageStyled)))
-//#define imageSetBrushed(i,a)		(i->config = ((a==1) ? (i->config | imageBrushed) : (i->config & ~imageBrushed)))
-//#define imageSetTiled(i,a)			(i->config = ((a==1) ? (i->config | imageTiled) : (i->config & ~imageTiled)))
-//#define imageIsBrushed(i)			((((i->config) & imageBrushed) == imageBrushed)?1:0)
-//#define imageIsTiled(i)				((((i->config) & imageTiled) == imageTiled)?1:0)
 #define imageConfig(i)				(i->config)
 #define imageThickness(i)			(i->thickness)
-//#define imageColor(i)				(imageThickness(i)==1?(imageIsAntiAliased(i)==0?i->color:gdAntiAliased):i->color)
-//#define imageColor(i)				(imageIsAntiAliased(i)==0?i->color:gdAntiAliased)
 #define imageImage(i)				(i->img)
-//#define imageBrush(i)				(i->brush)
-//#define imageTile(i)				(i->brush)
 
-
-//#define getImage(v)				((val_is_kind(v,ImagePtr)?val_data(v):NULL))
 
 
 int imageColor(ImageData img);
 
 ImageData getImage(value img);
 
-value FreeImage (value v);
-
-void finalize( value v );
+value FreeImage(value v);
 
 value alloc_gc_image(gdImagePtr image);
 

@@ -27,29 +27,35 @@
 #include "nGDImage.h"
 #include "nGDDraw.h"
 #include "nGDCopy.h"
+#include "nGDText.h"
+#include "nGDAnim.h"
 
 
-value ImageCreate(value x,value y, value back) {
+// creates a new image a given background color
+value ImageCreate(value x,value y, value back,value trueColor) {
 	int _x = val_int(x);
 	int _y = val_int(y);
-	gdImagePtr img = gdImageCreate(_x,_y);
-	value ret = alloc_gc_image(img);
-	ImageData i = getImage(ret);
-	initColor(i,back);
+	int _trueColor = val_bool(trueColor);
+	
+	value ret;
+	gdImagePtr img;
+	
+	if (_trueColor==1) {
+		img = gdImageCreateTrueColor(_x,_y);
+		ret = alloc_gc_image(img);
+		ImageData i = getImage(ret);
+		int _c = initColor(i,back);
+		gdImageFill(imageImage(i),0,0,_c);	
+	}
+	else {
+		img = gdImageCreate(_x,_y);
+		ret = alloc_gc_image(img);
+		initColor(getImage(ret),back);
+	}
 	return ret;
 }
 
-value ImageCreateTrueColor(value x,value y,value back) {
-	int _x = val_int(x);
-	int _y = val_int(y);
-	gdImagePtr img = gdImageCreateTrueColor(_x,_y);
-	value ret = alloc_gc_image(img);
-	ImageData i = getImage(ret);
-	int _color = initColor(i,back);
-	gdImageFill(imageImage(i),0,0,_color);
-	return ret;
-}
-
+// converts a truecolor image into a palette-based image
 value MakeImageToPalette(value img,value dither,value anzColors) {
 	ImageData _img = getImage(img);
 	int _dither = val_bool(dither);
@@ -58,6 +64,7 @@ value MakeImageToPalette(value img,value dither,value anzColors) {
 	return val_null;	
 }
 
+// make a copy of a of truecolor images and makes the copy palette-based
 value CloneImageToPalette(value img,value dither, value anzColors) {
 	ImageData _img = getImage(img);
 	int _dither = val_bool(dither);
@@ -94,8 +101,7 @@ DEFINE_PRIM(SetAntiAliasing,2);
 DEFINE_PRIM(SetThickness,2);
 DEFINE_PRIM(SetColor,2);
 DEFINE_PRIM(FreeImage,1);
-DEFINE_PRIM(ImageCreate,3);
-DEFINE_PRIM(ImageCreateTrueColor,3);
+DEFINE_PRIM(ImageCreate,4);
 DEFINE_PRIM(ImageCreateFromJpeg,1);
 DEFINE_PRIM(ImageCreateFromPng,1);
 DEFINE_PRIM(ImageCreateFromGif,1);
@@ -116,11 +122,8 @@ DEFINE_PRIM(ImageTrueColor,1);
 DEFINE_PRIM(SetPixel,3);
 DEFINE_PRIM(ImageLine,5);
 DEFINE_PRIM(ImageDashedLine,5);
-DEFINE_PRIM(ImagePolygon,3);
-DEFINE_PRIM(ImageOpenPolygon,3);
-DEFINE_PRIM(ImageRectangle,5);
-DEFINE_PRIM(ImageFilledPolygon,3);
-DEFINE_PRIM(ImageFilledRectangle,5);
+DEFINE_PRIM(ImagePolygon,5);
+DEFINE_PRIM_MULT(ImageRectangle);
 DEFINE_PRIM_MULT(ImageArc);
 DEFINE_PRIM_MULT(ImageFilledArc);
 DEFINE_PRIM(ImageFilledEllipse,5);
@@ -129,3 +132,12 @@ DEFINE_PRIM(ImageFill,3);
 //DEFINE_PRIM(SetBrush,3);
 //DEFINE_PRIM(SetTile,3);
 DEFINE_PRIM(SetStyle,2);
+DEFINE_PRIM(CloneImage,1);
+DEFINE_PRIM(GetImagePart,5);
+DEFINE_PRIM(ImageResize,4);
+DEFINE_PRIM(ImageRotate,2);
+DEFINE_PRIM_MULT(ImageCopyMerge);
+DEFINE_PRIM_MULT(ImageStringTTF);
+DEFINE_PRIM_MULT(RenderGifAnimation);
+DEFINE_PRIM(InitAnimation,0);
+DEFINE_PRIM(AddImage,2);

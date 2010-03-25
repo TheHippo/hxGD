@@ -25,15 +25,13 @@
 
 #define abs(i)	(i>0?i:-i)
 
-//#ifndef _GDIP
-//#define _GDIP
+
 DEFINE_KIND(ImagePtr);
-//#endif
 
 
 #define imageAntiAliased 1
-#define imageBrushed 2
-#define imageTiled 4
+#define imageBrushed 2 //unused
+#define imageTiled 4 //unused
 #define imageStyled 8
 
 struct _ImageData {
@@ -51,32 +49,11 @@ typedef struct _ImageData *ImageData;
 #define imageIsStyled(i)			((((i->config) & imageStyled) == imageStyled)?1:0)
 #define imageSetAntiAliased(i,a)	(i->config = ((a==1) ? (i->config | imageAntiAliased) : (i->config & ~imageAntiAliased)))
 #define imageSetStyled(i,a)			(i->config = ((a==1) ? (i->config | imageStyled) : (i->config & ~imageStyled)))
-//#define imageSetBrushed(i,a)		(i->config = ((a==1) ? (i->config | imageBrushed) : (i->config & ~imageBrushed)))
-//#define imageSetTiled(i,a)			(i->config = ((a==1) ? (i->config | imageTiled) : (i->config & ~imageTiled)))
-//#define imageIsBrushed(i)			((((i->config) & imageBrushed) == imageBrushed)?1:0)
-//#define imageIsTiled(i)				((((i->config) & imageTiled) == imageTiled)?1:0)
 #define imageConfig(i)				(i->config)
 #define imageThickness(i)			(i->thickness)
-//#define imageColor(i)				(imageThickness(i)==1?(imageIsAntiAliased(i)==0?i->color:gdAntiAliased):i->color)
-//#define imageColor(i)				(imageIsAntiAliased(i)==0?i->color:gdAntiAliased)
 #define imageImage(i)				(i->img)
-//#define imageBrush(i)				(i->brush)
-//#define imageTile(i)				(i->brush)
-
-
-//#define getImage(v)				((val_is_kind(v,ImagePtr)?val_data(v):NULL))
-
-
-// More safe
 
 int imageColor(ImageData img) {
-	//if (imageIsBrushed(img)==1) {
-	//	printf("brushed\n");
-	//	return gdBrushed;
-	//}
-	//if (imageIsTiled(img)==1) {
-	//	return gdTiled;
-	//}
 	if (imageIsStyled(img)==1)
 		return gdStyled;
 	if (imageThickness(img)==1) {
@@ -96,6 +73,10 @@ ImageData getImage(value img) {
 }
 
 /*
+ * 
+ * Brushing & Tiles seem to does not work with many gd versions
+ * 
+ * 
 void setBrushImage(ImageData in,ImageData cl) {
 	gdImagePtr cld;	
 	if (gdImageTrueColor(imageImage(in))) {
@@ -144,10 +125,12 @@ value FreeImage (value v) {
 	return val_null;
 }
 
+// called by the garbage collector
 void finalize( value v ) {
 	FreeImage(v);
 }
 
+// allocate an image that could be garbage collected
 value alloc_gc_image(gdImagePtr image) {
 	ImageData abstr = (ImageData)alloc_private(sizeof(ImageData));
 	imageImage(abstr) = image;
@@ -159,25 +142,31 @@ value alloc_gc_image(gdImagePtr image) {
 	return ret;
 }
 
+// setting current drawing color
 int initColor(ImageData img,value color) {
 	
 	//imageSetBrushed(img,0);
 	//imageSetTiled(img,0);
 	imageSetStyled(img,0);	
 	
+	// 0xRRGGBBAA = color
+	
 	int _color = val_int(color);
-	int alpha = (255 -(0x000000FF & _color)) >> 1;
+	int alpha = (255 -(0x000000FF & _color)) >> 1; // gd alpha information is just 1 byte and reverse
 	int red = 	(0xFF000000 & _color) >> 24;
 	int green =	(0x00FF0000 & _color) >> 16;
-	int blue =	(0x0000FF00 & _color) >> 8;	
+	int blue =	(0x0000FF00 & _color) >> 8;
+	
 	int c = gdImageColorResolveAlpha(imageImage(img),red,green,blue,alpha);
-	//if (c == -1)
-	//	c = gdImageColorClosestAlpha(imageImage(img),red,green,blue,alpha);
-	if (imageIsAntiAliased(img)==1)
+	
+	if (imageIsAntiAliased(img)==1) //setting back antiAliasing
 		gdImageSetAntiAliased(imageImage(img),c);	
+	
 	return c;
+	
 }
 
+// setting style of line drawing
 value SetStyle(value img,value colors) {
 	ImageData _img = getImage(img);
 	int n = val_array_size(colors);
@@ -191,7 +180,7 @@ value SetStyle(value img,value colors) {
 	return val_null;		
 }
 
-
+// toggeling antialiasing
 value SetAntiAliasing (value img, value antiAlias) {
 	ImageData _img = getImage(img);
 	
@@ -203,15 +192,21 @@ value SetAntiAliasing (value img, value antiAlias) {
 	return val_null;	
 }
 
+
+// setting thickness of drawing functions
 value SetThickness(value img, value thickness) {
 	ImageData _img = getImage(img);
 	imageThickness(_img) = abs(val_int(thickness));
 	gdImageSetThickness(imageImage(_img),imageThickness(_img));
+	
+	//this is somekind of useless, using drawing function with thickness & antialiasing
+	//does not work in most GD versions, so ignored @ imageColor
 	if (imageIsAntiAliased(_img)==1)
 		gdImageSetAntiAliased(imageImage(_img),imageColor(_img));
 	return alloc_int(imageThickness(_img));
 }
 
+// setting current drawing color
 value SetColor(value img, value color) {
 	ImageData _img = getImage(img);
 	_img->color = initColor(_img,color);	

@@ -1,5 +1,5 @@
 /*
- *      nGDCopy.h
+ *      nGDAnim.h
  *      
  *      Copyright 2009 Philipp Klose <hippo@byteanvil.com>
  *      
@@ -19,10 +19,7 @@
  *      MA 02110-1301, USA.
  */
 
-value CloneImage(value img);
-value GetImagePart(value img,value x,value y,value w,value h);
-value ImageResize(value img, value w,value h,value resample);
-value ImageRotate(value img,value angle);
-//value ImageCopyMerge(value img,value attach, value dstX, value dstY, value srcX, value srcY, value w, value h, value pct) {
-value ImageCopyMerge(value *args, int nargs);
 
+value RenderGifAnimation(value *args,int nargs);
+value InitAnimation();
+value AddImage(value list,value image);

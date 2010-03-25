@@ -26,15 +26,10 @@ value ImageLine(value img,value x1,value y1, value x2, value y2);
 
 value ImageDashedLine(value img,value x1,value y1, value x2, value y2);
 
-value ImagePolygon(value img,value x,value y);
+value ImagePolygon(value img,value x,value y, value open, value filled);
 
-value ImageOpenPolygon(value img,value x,value y,value color);
-
-value ImageRectangle(value img,value x,value y, value width, value height);
-
-value ImageFilledPolygon(value img,value x,value y);
-
-value ImageFilledRectangle(value img,value x,value y, value width, value height);
+//value ImageRectangle(value img,value x,value y, value width, value height, value filled) {
+value ImageRectangle(value *args, int nargs);
 
 //value ImageArc(value img, value x,value y,value width, value height,value start, value end) {
 value ImageArc(value *args, int nargs);

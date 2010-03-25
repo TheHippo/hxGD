@@ -19,9 +19,12 @@
  *      MA 02110-1301, USA.
  */
 
+
 #include <neko.h>
 #include <gd.h>
 #include "nGDImage.h"
+
+// loading and saving from files, really straight
 
 
 value ImageCreateFromJpeg(value filename) {
