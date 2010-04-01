@@ -1,7 +1,7 @@
 /*
  *      hxGD.Graphics.hx
  *      
- *      Copyright 2009 Philipp Klose <hippo@byteanvil.com>
+ *      Copyright 2010 Philipp Klose <me@thehippo.de>
  *      
  *      This program is free software; you can redistribute it and/or modify
  *      it under the terms of the GNU General Public License as published by
