@@ -21,16 +21,8 @@
 
 package hxGD;
 
+
 import neko.Lib;
-
-
-enum FileType {
-  Png;
-  Jpeg (quality:Int);
-  Gif;
-  Gd;
-  Gd2 (compressed:Bool, chunkSize:Int);	
-}
 
 enum StringAlign {
 	LeftTop;
@@ -42,6 +34,14 @@ enum StringAlign {
 	LeftBottom;
 	CenterBottom;
 	RightBottom;
+}
+
+enum FileType {
+  Png;
+  Jpeg (quality:Int);
+  Gif;
+  Gd;
+  Gd2 (compressed:Bool, chunkSize:Int);	
 }
 
 
@@ -103,6 +103,23 @@ class Image {
 			case Gd:			gd_imageGd(img,file);
 			case Gd2(comp,ch):	gd_imageGd2(img,file,comp,ch);
 		}			
+	}
+	
+	/**
+	 * returns plain image data, eg. for sending it to the browser
+	 * @param type see FileTyoe
+	 * @return String data
+	 */
+	public inline function getImageData(type:FileType):String {
+		return Lib.nekoToHaxe(
+			switch (type) {
+				case Png: gd_imagePngData(img);
+				case Gif: gd_imageGifData(img);
+				case Jpeg(q): gd_imageJpegData(img,q);
+				default:
+					throw ("not supported");
+			}		
+		);
 	}
 	
 	/**
@@ -240,8 +257,11 @@ class Image {
 	private static var gd_freeImage = Lib.load("nGD","FreeImage",1);
 	private static var gd_imageCreate = Lib.load("nGD","ImageCreate",4);
 	private static var gd_imageJpeg = Lib.load("nGD","ImageJpeg",3);
+	private static var gd_imageJpegData = Lib.load("nGD","ImageJpegData",2);
 	private static var gd_imageGif = Lib.load("nGD","ImageGif",2);
+	private static var gd_imageGifData = Lib.load("nGD","ImageGifData",1);
 	private static var gd_imagePng = Lib.load("nGD","ImagePng",2);
+	private static var gd_imagePngData = Lib.load("nGD","ImagePngData",1);
 	private static var gd_imageGd = Lib.load("nGD","ImageGd",2);
 	private static var gd_imageGd2 = Lib.load("nGD","ImageGd2",4);
 	private static var gd_makeImageToPalette = Lib.load("nGD","MakeImageToPalette",3);

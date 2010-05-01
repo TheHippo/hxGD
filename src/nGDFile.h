@@ -37,9 +37,15 @@ value ImageCreateFromWBMP(value filename);
 
 value ImageJpeg(value img,value filename,value quality);
 
+value ImageJpegData(value img,value quality);
+
 value ImageGif(value img,value filename);
 
+value ImageGifData(value img);
+
 value ImagePng(value img,value filename);
+
+value ImagePngData(value img);
 
 value ImageGd (value img,value filename);
 

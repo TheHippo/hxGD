@@ -18,8 +18,6 @@
  *      Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  *      MA 02110-1301, USA.
  */
-
-
 #include <neko.h>
 #include <gd.h>
 #include "nGDImage.h"
@@ -106,6 +104,17 @@ value ImageJpeg(value img,value filename,value quality) {
 	return val_null;
 }
 
+value ImageJpegData(value img, value quality) {
+	ImageData _img = getImage(img);
+	int _quality = val_int(quality);
+	int size;
+	void *ptr = gdImageJpegPtr(imageImage(_img),&size,_quality);
+	buffer ret = alloc_buffer(NULL);
+	buffer_append_sub(ret,ptr,size);
+	gdFree(ptr);
+	return buffer_to_string(ret);
+}
+
 value ImageGif(value img,value filename) {
 	char *_filename = val_string(filename);
 	ImageData _img = getImage(img);
@@ -115,6 +124,16 @@ value ImageGif(value img,value filename) {
 	return val_null;
 }
 
+value ImageGifData(value img) {
+	ImageData _img = getImage(img);
+	int size;
+	void *ptr = gdImageGifPtr(imageImage(_img),&size);
+	buffer ret = alloc_buffer(NULL);
+	buffer_append_sub(ret,ptr,size);
+	gdFree(ptr);
+	return buffer_to_string(ret);
+}
+
 value ImagePng(value img,value filename) {
 	char *_filename = val_string(filename);
 	ImageData _img = getImage(img);
@@ -122,6 +141,16 @@ value ImagePng(value img,value filename) {
 	gdImagePng(imageImage(_img),_file);
 	fclose(_file);	
 	return val_null;
+}
+
+value ImagePngData(value img) {
+	ImageData _img = getImage(img);
+	int size;
+	void *ptr = gdImagePngPtr(imageImage(_img),&size);
+	buffer ret = alloc_buffer(NULL);
+	buffer_append_sub(ret,ptr,size);
+	gdFree(ptr);
+	return buffer_to_string(ret);
 }
 
 value ImageGd (value img,value filename) {

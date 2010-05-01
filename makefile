@@ -15,13 +15,16 @@ all: $(OBJ)
 src/%.o: src/%.c
 	$(CC) $(CFLAGS) -c -o $@ $<
 
-.PHONY: clean haxe run
+.PHONY: clean haxe run install
 
 clean:
 	rm -f src/*.o
 
-haxe:
+haxe: all
 	haxe build.hxml
 	
-run:
+run: haxe
 	neko test1.n
+	
+install: all
+	cp $(OUT) $(NEKOPATH)../

@@ -39,7 +39,6 @@ struct _ImageData {
 	int color;
 	int thickness;
 	gdImagePtr img;
-	//gdImagePtr brush;
 };
 
 typedef struct _ImageData *ImageData;
@@ -72,56 +71,9 @@ ImageData getImage(value img) {
 	return val_data(img);
 }
 
-/*
- * 
- * Brushing & Tiles seem to does not work with many gd versions
- * 
- * 
-void setBrushImage(ImageData in,ImageData cl) {
-	gdImagePtr cld;	
-	if (gdImageTrueColor(imageImage(in))) {
-	//	printf("clone true color\n");
-		cld = gdImageCreateTrueColor(gdImageSX(imageImage(in)),gdImageSY(imageImage(in)));
-	}
-	else {
-//		printf("clone palette\n");
-		cld = gdImageCreate(gdImageSX(imageImage(in)),gdImageSY(imageImage(in)));
-	}
-//	printf("made copy\n");
-	gdImageCopy(cld,imageImage(in),0,0,0,0,gdImageSX(imageImage(in)),gdImageSY(imageImage(in)));
-	imageBrush(in)=cld;
-}
-
-value SetBrush(value img,value brush, value flag) {
-	ImageData _img = getImage(img);
-	if (val_bool(flag)==1) {
-		imageSetTiled(_img,0);
-		imageSetBrushed(_img,1);
-		ImageData _brush = getImage(brush);
-		//printf("before clone\n");
-		setBrushImage(_img,_brush);	
-		//(imageImage(_brush));	
-		//printf("after clone\n");
-	}
-	return val_null;
-}
-
-value SetTile(value img, value tile, value flag) {
-	ImageData _img = getImage(img);
-	if (val_bool(flag)==1) {
-		imageSetBrushed(_img,0);
-		imageSetTiled(_img,1);
-		ImageData _tile = getImage(tile);
-		setBrushImage(_img,_tile);
-	}
-	return val_null;
-} */
-
 value FreeImage (value v) {
 	ImageData img = getImage(v);
 	gdImageDestroy(imageImage(img));
-//	if (imageBrush(img)!=NULL)
-//		gdImageDestroy(imageBrush(img));
 	return val_null;
 }
 
@@ -136,7 +88,6 @@ value alloc_gc_image(gdImagePtr image) {
 	imageImage(abstr) = image;
 	imageConfig(abstr) = 0;
 	imageThickness(abstr) = 0;
-	//imageBrush(abstr) = NULL;
 	value ret = alloc_abstract(ImagePtr,abstr);
 	val_gc(ret,finalize);
 	return ret;
@@ -144,9 +95,6 @@ value alloc_gc_image(gdImagePtr image) {
 
 // setting current drawing color
 int initColor(ImageData img,value color) {
-	
-	//imageSetBrushed(img,0);
-	//imageSetTiled(img,0);
 	imageSetStyled(img,0);	
 	
 	// 0xRRGGBBAA = color

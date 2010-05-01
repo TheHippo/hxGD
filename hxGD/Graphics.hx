@@ -258,8 +258,6 @@ class Graphics {
 	private static var gd_imageFilledArc = Lib.load("nGD","ImageFilledArc",-1);
 	private static var gd_imageFillToBorder = Lib.load("nGD","ImageFillToBorder",4);
 	private static var gd_imageFill = Lib.load("nGD","ImageFill",3);
-	//private static var gd_setBrush = Lib.load("nGD","SetBrush",3);
-	//private static var gd_setTile = Lib.load("nGD","SetTile",3);
 	private static var gd_setStyle = Lib.load("nGD","SetStyle",2);
 
 }

@@ -59,10 +59,6 @@ int initColor(ImageData img,value color);
 
 value SetStyle(value img,value colors);
 
-//value SetBrush(value img,value brush, value flag);
-
-//value SetTile(value img, value tile, value flag);
-
 value SetAntiAliasing (value img, value antiAlias);
 
 value SetThickness(value img, value thickness);
