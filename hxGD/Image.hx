@@ -175,7 +175,7 @@ class Image {
 	 * @param	height
 	 * @return Image
 	 */
-	public inline function getImagePart(x:Int,y:Int,width:Int,height):Image {
+	public inline function getImagePart(x:Int,y:Int,width:Int,height:Int):Image {
 		var ret:Image = Type.createEmptyInstance(Image);
 		ret.img = gd_getImagePart(img,x,y,width,height);
 		ret.graphics = new Graphics(ret.img);
