@@ -55,7 +55,7 @@ class Image {
 	/**
 	 * neko image representation
 	 */
-	public var img:Void;	
+	public var img:Void;
 	
 	/**
 	 * is it a trueColor image? otherwise 256 color palette based
@@ -102,7 +102,7 @@ class Image {
 			case Gif:			gd_imageGif(img,file);
 			case Gd:			gd_imageGd(img,file);
 			case Gd2(comp,ch):	gd_imageGd2(img,file,comp,ch);
-		}			
+		}
 	}
 	
 	/**
@@ -118,7 +118,7 @@ class Image {
 				case Jpeg(q): gd_imageJpegData(img,q);
 				default:
 					throw ("not supported");
-			}		
+			}
 		);
 	}
 	
@@ -277,5 +277,4 @@ class Image {
 	private static var gd_imageStringTTF = Lib.load("nGD","ImageStringTTF",-1);
 	
 	
-
 }
