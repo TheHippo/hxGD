@@ -24,11 +24,20 @@
 
 // loading and saving from files, really straight
 
+FILE* openFileRead(value filename) {
+	val_check(filename, string);
+	char *_filename = val_string(filename);
+	return fopen(_filename, "r");
+}
+
+FILE* openFileWrite(value filename) {
+	val_check(filename, string);
+	char *_filename = val_string(filename);
+	return fopen(_filename, "wb");
+}
 
 value ImageCreateFromJpeg(value filename) {
-	val_check(filename,string);
-	char *_filename = val_string(filename);
-	FILE *_file = fopen(_filename,"r");
+	FILE *_file = openFileRead(filename);
 	gdImagePtr img = gdImageCreateFromJpeg(_file);
 	fclose(_file);
 	value ret = alloc_gc_image(img);
@@ -36,45 +45,35 @@ value ImageCreateFromJpeg(value filename) {
 }
 
 value ImageCreateFromPng(value filename) {
-	val_check(filename,string);
-	char *_filename = val_string(filename);
-	FILE *_file = fopen(_filename,"r");
+	FILE *_file = openFileRead(filename);
 	gdImagePtr img = gdImageCreateFromPng(_file);
 	fclose(_file);
 	return alloc_gc_image(img);
 }
 
 value ImageCreateFromGif(value filename) {
-	val_check(filename,string);
-	char *_filename = val_string(filename);
-	FILE *_file = fopen(_filename,"r");
+	FILE *_file = openFileRead(filename);
 	gdImagePtr img = gdImageCreateFromGif(_file);
 	fclose(_file);
 	return alloc_gc_image(img);
 }
 
 value ImageCreateFromGd(value filename) {
-	val_check(filename,string);
-	char *_filename = val_string(filename);
-	FILE *_file = fopen(_filename,"r");
+	FILE *_file = openFileRead(filename);
 	gdImagePtr img = gdImageCreateFromGd(_file);
 	fclose(_file);
 	return alloc_gc_image(img);
 }
 
 value ImageCreateFromGd2(value filename) {
-	val_check(filename,string);
-	char *_filename = val_string(filename);
-	FILE *_file = fopen(_filename,"r");
+	FILE *_file = openFileRead(filename);
 	gdImagePtr img = gdImageCreateFromGd2(_file);
 	fclose(_file);
 	return alloc_gc_image(img);
 }
 
 value ImageCreateFromGd2Part(value filename, value srcX, value srcY, value width, value height) {
-	val_check(filename,string);
-	char *_filename = val_string(filename);
-	FILE *_file = fopen(_filename,"r");
+	FILE *_file = openFileRead(filename);
 	int _srcX = val_int(srcX);
 	int _srcY = val_int(srcY);
 	int _width = val_int(width);
@@ -85,9 +84,7 @@ value ImageCreateFromGd2Part(value filename, value srcX, value srcY, value width
 }
 
 value ImageCreateFromWBMP(value filename) {
-	val_check(filename,string);
-	char *_filename = val_string(filename);
-	FILE *_file = fopen(_filename,"r");
+	FILE *_file = openFileRead(filename);
 	gdImagePtr img = gdImageCreateFromWBMP(_file);
 	fclose(_file);
 	return alloc_gc_image(img);
@@ -95,10 +92,9 @@ value ImageCreateFromWBMP(value filename) {
 
 
 value ImageJpeg(value img,value filename,value quality) {
-	char *_filename = val_string(filename);
 	int _quality = val_int(quality);
 	ImageData _img = getImage(img);
-	FILE *_file = fopen(_filename,"wb");
+	FILE *_file = openFileWrite(filename);
 	gdImageJpeg(imageImage(_img),_file,_quality);
 	fclose(_file);	
 	return val_null;
@@ -116,9 +112,8 @@ value ImageJpegData(value img, value quality) {
 }
 
 value ImageGif(value img,value filename) {
-	char *_filename = val_string(filename);
 	ImageData _img = getImage(img);
-	FILE *_file = fopen(_filename,"wb");
+	FILE *_file = openFileWrite(filename);
 	gdImageGif(imageImage(_img),_file);
 	fclose(_file);	
 	return val_null;
@@ -135,9 +130,8 @@ value ImageGifData(value img) {
 }
 
 value ImagePng(value img,value filename) {
-	char *_filename = val_string(filename);
 	ImageData _img = getImage(img);
-	FILE *_file = fopen(_filename,"wb");
+	FILE *_file = openFileWrite(filename);
 	gdImagePng(imageImage(_img),_file);
 	fclose(_file);	
 	return val_null;
@@ -154,9 +148,8 @@ value ImagePngData(value img) {
 }
 
 value ImageGd (value img,value filename) {
-	char *_filename = val_string(filename);
 	ImageData _img = getImage(img);
-	FILE *_file = fopen(_filename,"wb");
+	FILE *_file = openFileWrite(filename);
 	gdImageGd(imageImage(_img),_file);
 	fclose(_file);	
 	return val_null;
@@ -164,10 +157,9 @@ value ImageGd (value img,value filename) {
 
 value ImageGd2 (value img,value filename,value compressed,value chunksize) {
 	ImageData _img = getImage(img);
-	char *_filename = val_string(filename);
 	int _compressed = val_int(compressed);
 	int _chunksize = val_int(chunksize);
-	FILE *_file = fopen(_filename,"wb");
+	FILE *_file = openFileWrite(filename);
 	gdImageGd2(imageImage(_img),_file,_chunksize,_compressed);
 	fclose(_file);	
 	return val_null;
