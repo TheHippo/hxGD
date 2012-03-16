@@ -9,13 +9,13 @@ OUT = nGD.ndll
 
 OBJ = src/nGD.o src/nGDFile.o src/nGDDraw.o src/nGDCopy.o src/nGDText.o src/nGDAnim.o src/nGDImage.o
 
-all: $(OBJ)
+all: ndll
+
+ndll: $(OBJ)
 	$(CC) $(CFLAGS) $(LDFLAGS) $(OBJ) -o $(OUT)
-	
+
 src/%.o: src/%.c
 	$(CC) $(CFLAGS) -c -o $@ $<
-
-.PHONY: clean haxe run install
 
 clean:
 	rm -f src/*.o
@@ -28,3 +28,5 @@ run: haxe
 	
 install: all
 	cp $(OUT) $(NEKOPATH)../
+
+.PHONY: clean haxe run install
