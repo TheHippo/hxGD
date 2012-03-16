@@ -2,7 +2,7 @@
 NEKOPATH=/usr/lib/neko/include/
 
 CC = gcc
-CFLAGS = -Wall -shared -I$(NEKOPATH) -fPIC
+CFLAGS = -Wall -shared -I$(NEKOPATH) -fPIC -O3
 LDFLAGS = -lgd
 
 OUT = nGD.ndll

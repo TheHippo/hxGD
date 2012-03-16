@@ -158,7 +158,7 @@ value RenderGifAnimation(value *args,int nargs) {
 		
 		cur = anim->list;
 		i=0;
-		int trans;
+		int trans = 0;
 		while (cur->next != NULL) {
 			cur->img = gdImageCreate(w,h);
 			gdImageCopy(cur->img,temp,0,0,0,i*h,w,h);
@@ -178,7 +178,7 @@ value RenderGifAnimation(value *args,int nargs) {
 	gdImageGifAnimBegin(anim->list->img,file,_globalCM,_loop);
 	
 	ImageList cur = anim->list;
-	gdImagePtr last;
+	gdImagePtr last = NULL;
 	while (cur->next!=NULL) {
 		gdImageGifAnimAdd(cur->img,file,_localCM ,0,0,_delay,gdDisposalNone,((_optimise && _globalCM)?last:NULL));	
 		last = cur->img;
