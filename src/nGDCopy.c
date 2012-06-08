@@ -56,11 +56,24 @@ value ImageResize(value img, value w,value h,value resample) {
 	int _r = val_bool(resample);
 	gdImagePtr cd;
 	
-	//creating new one
-	if (gdImageTrueColor(imageImage(_img)))
+	int tc = gdImageTrueColor(imageImage(_img));
+	int transp;
+	if (tc) {
+		// create a new true color image:
 		cd = gdImageCreateTrueColor(_w,_h);
-	else
+		// set alpha for PNGs:
+		gdImageAlphaBlending(cd, 0);
+		cd->saveAlphaFlag = 1;
+		transp = gdImageColorAllocateAlpha(cd, 255, 255, 255, 127);
+	}
+	else {
+		// create a new image:
 		cd = gdImageCreate(_w,_h);
+		// set transparency for GIFs:
+		transp = gdImageGetTransparent(imageImage(_img));
+		gdImageColorTransparent(cd, transp);
+	}
+	gdImageFilledRectangle(cd, 0, 0, _w, _h, transp);
 	
 	//copy	
 	if (_r)
