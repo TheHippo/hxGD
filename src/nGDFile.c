@@ -27,19 +27,24 @@
 FILE* openFileRead(value filename) {
 	val_check(filename, string);
 	char *_filename = val_string(filename);
-	return fopen(_filename, "r");
+	FILE *_file = fopen(_filename, "r");
+	if (_file == NULL) failure("file not found / could not be loaded");
+	return _file;
 }
 
 FILE* openFileWrite(value filename) {
 	val_check(filename, string);
 	char *_filename = val_string(filename);
-	return fopen(_filename, "wb");
+	FILE *_file = fopen(_filename, "wb");
+	if (_file == NULL) failure("file not found / could not be loaded");
+	return _file;
 }
 
 value ImageCreateFromJpeg(value filename) {
 	FILE *_file = openFileRead(filename);
 	gdImagePtr img = gdImageCreateFromJpeg(_file);
 	fclose(_file);
+	if (img == NULL) failure("image file could not be loaded: probably wrong format");
 	value ret = alloc_gc_image(img);
 	return ret;
 }
@@ -48,6 +53,7 @@ value ImageCreateFromPng(value filename) {
 	FILE *_file = openFileRead(filename);
 	gdImagePtr img = gdImageCreateFromPng(_file);
 	fclose(_file);
+	if (img == NULL) failure("image file could not be loaded: probably wrong format");
 	return alloc_gc_image(img);
 }
 
@@ -55,6 +61,7 @@ value ImageCreateFromGif(value filename) {
 	FILE *_file = openFileRead(filename);
 	gdImagePtr img = gdImageCreateFromGif(_file);
 	fclose(_file);
+	if (img == NULL) failure("image file could not be loaded: probably wrong format");
 	return alloc_gc_image(img);
 }
 
