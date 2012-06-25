@@ -1,0 +1,4 @@
+-cp ..
+-main Test2
+-neko test2.n
+-cmd neko test2.n
